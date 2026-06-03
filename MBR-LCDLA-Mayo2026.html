@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBR · La Casa de Los Abuelos · Mayo 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --rappi: #FF441F;
+    --purple: #6B0F9C;
+    --purple-light: #9B3CCE;
+    --dark: #1a1a2e;
+    --green: #1AAB5F;
+    --red: #E82020;
+    --yellow: #F5A623;
+    --blue: #1E6FDB;
+    --turbo: #FF6B00;
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+  nav {
+    position: sticky; top:0; z-index:100;
+    background: var(--dark); display:flex; align-items:center;
+    padding:0 1rem; gap:0; overflow-x:auto; scrollbar-width:none;
+    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  nav::-webkit-scrollbar { display:none; }
+  .nav-brand {
+    display:flex; align-items:center; gap:.5rem; padding:.6rem 1rem .6rem 0;
+    border-right:1px solid rgba(255,255,255,.15); margin-right:.5rem; flex-shrink:0;
+  }
+  .nav-brand .logo { width:28px; height:28px; background:var(--rappi); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:13px; }
+  .nav-brand span { color:#fff; font-weight:700; font-size:13px; white-space:nowrap; }
+  nav a {
+    color:rgba(255,255,255,.65); text-decoration:none; padding:.85rem .85rem;
+    font-size:12px; font-weight:600; white-space:nowrap; border-bottom:3px solid transparent;
+    transition:.2s; letter-spacing:.3px; flex-shrink:0;
+  }
+  nav a:hover { color:#fff; background:rgba(255,255,255,.06); }
+  nav a.active { color:#fff; border-bottom-color:var(--rappi); }
+  .nav-turbo { color:var(--turbo) !important; }
+  .nav-turbo.active { border-bottom-color:var(--turbo) !important; color:#fff !important; }
+
+  section { display:none; padding:1.5rem; max-width:1400px; margin:0 auto; }
+  section.active { display:block; }
+
+  .section-header { margin-bottom:1.5rem; }
+  .section-header h1 { font-size:1.6rem; font-weight:800; color:var(--dark); }
+  .section-header p { color:var(--text-muted); font-size:.85rem; margin-top:.2rem; }
+  .badge { display:inline-flex; align-items:center; gap:.3rem; background:var(--rappi); color:#fff;
+    font-size:.7rem; font-weight:700; padding:.2rem .6rem; border-radius:20px; margin-left:.5rem; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .kpi-card {
+    background:var(--card); border-radius:12px; padding:1.2rem;
+    box-shadow:0 1px 4px rgba(0,0,0,.08); border-left:4px solid var(--purple);
+  }
+  .kpi-card.red { border-left-color:var(--rappi); }
+  .kpi-card.green { border-left-color:var(--green); }
+  .kpi-card.yellow { border-left-color:var(--yellow); }
+  .kpi-card.blue { border-left-color:var(--blue); }
+  .kpi-card.turbo { border-left-color:var(--turbo); }
+  .kpi-label { font-size:.72rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  .kpi-value { font-size:1.8rem; font-weight:800; color:var(--dark); margin:.3rem 0 .2rem; line-height:1; }
+  .kpi-value.sm { font-size:1.35rem; }
+  .kpi-delta { font-size:.75rem; font-weight:700; }
+  .up { color:var(--green); } .down { color:var(--red); } .neutral { color:var(--text-muted); }
+
+  .chart-grid { display:grid; gap:1rem; margin-bottom:1rem; }
+  .chart-grid-2 { grid-template-columns:1fr 1fr; }
+  .chart-grid-3 { grid-template-columns:1fr 1fr 1fr; }
+  .chart-card {
+    background:var(--card); border-radius:12px; padding:1.2rem;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+  }
+  .chart-card h3 { font-size:.85rem; font-weight:700; color:var(--dark); margin-bottom:1rem; }
+  .chart-wrap { position:relative; height:220px; }
+  .chart-wrap.tall { height:280px; }
+  .chart-wrap.sm { height:160px; }
+
+  .table-card { background:var(--card); border-radius:12px; padding:1.2rem; box-shadow:0 1px 4px rgba(0,0,0,.08); margin-bottom:1rem; }
+  .table-card h3 { font-size:.85rem; font-weight:700; color:var(--dark); margin-bottom:.8rem; }
+  .data-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+  .data-table th { background:var(--purple); color:#fff; padding:.5rem .7rem; text-align:left; font-weight:600; font-size:.72rem; text-transform:uppercase; }
+  .data-table td { padding:.45rem .7rem; border-bottom:1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:#f9fafb; }
+  .data-table .num { text-align:right; font-weight:600; }
+  .pill { display:inline-block; padding:.15rem .5rem; border-radius:20px; font-size:.68rem; font-weight:700; }
+  .pill-green { background:#d1fae5; color:#065f46; }
+  .pill-red { background:#fee2e2; color:#991b1b; }
+  .pill-yellow { background:#fef3c7; color:#92400e; }
+  .pill-gray { background:#f3f4f6; color:#374151; }
+  .pill-blue { background:#dbeafe; color:#1e40af; }
+
+  .funnel-visual { display:flex; flex-direction:column; gap:.5rem; padding:1rem 0; }
+  .funnel-step { display:flex; align-items:center; gap:.8rem; }
+  .funnel-bar-wrap { flex:1; background:#f3f4f6; border-radius:6px; height:36px; overflow:hidden; }
+  .funnel-bar { height:100%; border-radius:6px; display:flex; align-items:center; padding:0 .8rem; color:#fff; font-weight:700; font-size:.8rem; }
+  .funnel-label { width:70px; font-size:.75rem; font-weight:700; color:var(--text-muted); text-align:right; flex-shrink:0; }
+  .funnel-pct { width:60px; font-size:.75rem; font-weight:700; color:var(--dark); flex-shrink:0; }
+
+  .ops-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
+  .ops-card { background:var(--card); border-radius:12px; padding:1rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .ops-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem; }
+  .ops-metric { font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); }
+  .ops-target { font-size:.68rem; font-weight:600; color:var(--text-muted); background:#f3f4f6; padding:.1rem .4rem; border-radius:4px; }
+  .ops-value { font-size:1.6rem; font-weight:800; }
+  .ops-value.danger { color:var(--red); }
+  .ops-value.ok { color:var(--green); }
+  .ops-value.warn { color:var(--yellow); }
+  .ops-delta { font-size:.75rem; font-weight:600; margin-top:.2rem; }
+  .ops-bar-wrap { height:6px; background:#f3f4f6; border-radius:3px; margin-top:.5rem; }
+  .ops-bar { height:100%; border-radius:3px; }
+
+  .defect-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1rem; }
+  .defect-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+  .defect-card { background:var(--card); border-radius:12px; padding:1.2rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .defect-card h3 { font-size:.85rem; font-weight:700; color:var(--dark); margin-bottom:.8rem; }
+  .defect-kpi { text-align:center; padding:1rem .8rem; border-radius:8px; }
+  .defect-kpi .val { font-size:2rem; font-weight:800; }
+  .defect-kpi .lbl { font-size:.72rem; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-top:.3rem; }
+  .defect-kpi .sub { font-size:.72rem; color:var(--text-muted); margin-top:.2rem; }
+  .missing-bg { background:#fef3c7; } .missing-bg .val { color:#d97706; }
+  .wrong-bg { background:#dbeafe; } .wrong-bg .val { color:#1d4ed8; }
+  .bad-bg { background:#fee2e2; } .bad-bg .val { color:#dc2626; }
+
+  .insights-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1rem; }
+  .insight-card {
+    background:var(--card); border-radius:12px; padding:1.2rem;
+    box-shadow:0 1px 4px rgba(0,0,0,.08); border-top:3px solid var(--purple);
+  }
+  .insight-card.red { border-top-color:var(--rappi); }
+  .insight-card.green { border-top-color:var(--green); }
+  .insight-card.yellow { border-top-color:var(--yellow); }
+  .insight-card.blue { border-top-color:var(--blue); }
+  .insight-card.turbo { border-top-color:var(--turbo); }
+  .insight-icon { font-size:1.4rem; margin-bottom:.5rem; }
+  .insight-title { font-size:.85rem; font-weight:700; margin-bottom:.4rem; }
+  .insight-body { font-size:.78rem; color:var(--text-muted); line-height:1.55; }
+
+  .q2-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1rem; margin-bottom:1rem; }
+  .q2-card { background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .q2-header { padding:1rem; color:#fff; }
+  .q2-header h3 { font-size:.95rem; font-weight:800; }
+  .q2-header p { font-size:.73rem; opacity:.85; margin-top:.15rem; }
+  .q2-body { padding:1rem; }
+  .q2-item { display:flex; align-items:flex-start; gap:.5rem; margin-bottom:.55rem; font-size:.78rem; line-height:1.4; }
+  .q2-item::before { content:"→"; color:var(--rappi); font-weight:700; flex-shrink:0; }
+
+  .turbo-header { background:linear-gradient(135deg,#FF6B00,#FF441F); border-radius:12px; padding:1.2rem 1.5rem; margin-bottom:1.5rem; color:#fff; display:flex; align-items:center; justify-content:space-between; }
+  .turbo-header h2 { font-size:1.2rem; font-weight:800; }
+  .turbo-header p { font-size:.82rem; opacity:.85; margin-top:.2rem; }
+  .turbo-badge { background:rgba(255,255,255,.2); border-radius:8px; padding:.3rem .8rem; font-size:.75rem; font-weight:700; flex-shrink:0; }
+
+  .prime-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+  .prime-card { background:var(--card); border-radius:12px; padding:1.2rem; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .prime-card h3 { font-size:.88rem; font-weight:700; margin-bottom:.8rem; }
+
+  .sub-header { font-size:1rem; font-weight:800; color:var(--dark); margin:1.5rem 0 .8rem; }
+
+  @media(max-width:768px) {
+    .chart-grid-2,.chart-grid-3 { grid-template-columns:1fr; }
+    .ops-grid { grid-template-columns:1fr 1fr; }
+    .defect-grid,.defect-type-grid { grid-template-columns:1fr; }
+    .prime-grid { grid-template-columns:1fr; }
+    .turbo-header { flex-direction:column; gap:.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="logo">R</div>
+    <span>LCDLA · Mayo 2026</span>
+  </div>
+  <a href="#resultados" class="active" onclick="show('resultados',this)">📊 Resultados</a>
+  <a href="#tiendas" onclick="show('tiendas',this)">🏪 Tiendas</a>
+  <a href="#funnel" onclick="show('funnel',this)">🔽 Funnel</a>
+  <a href="#ops" onclick="show('ops',this)">⚙️ Operaciones</a>
+  <a href="#productos" onclick="show('productos',this)">🍲 Productos</a>
+  <a href="#usuarios" onclick="show('usuarios',this)">👥 Usuarios</a>
+  <a href="#insights" onclick="show('insights',this)">💡 Insights</a>
+  <a href="#q2" onclick="show('q2',this)">📅 Campañas Junio</a>
+  <a href="#turbo" onclick="show('turbo',this)" class="nav-turbo">⚡ Turbo</a>
+</nav>
+
+<!-- 1. RESULTADOS -->
+<section id="resultados" class="active">
+  <div class="section-header">
+    <h1>Resultados Mayo 2026 <span class="badge">vs LM · vs LY</span></h1>
+    <p>La Casa de Los Abuelos · Todas las marcas · 5 ciudades · 24 sucursales</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card red">
+      <div class="kpi-label">Venta Neta</div>
+      <div class="kpi-value">$1.17M</div>
+      <div class="kpi-delta"><span class="up">▲ +7.4% vs LM</span> &nbsp;·&nbsp; <span class="up">▲ +18.5% vs LY</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Órdenes</div>
+      <div class="kpi-value">3,955</div>
+      <div class="kpi-delta"><span class="up">▲ +12.0% vs LM</span> &nbsp;·&nbsp; <span class="up">▲ +31.8% vs LY</span></div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">AOV</div>
+      <div class="kpi-value">$294.93</div>
+      <div class="kpi-delta"><span class="down">▼ -4.2% vs LM</span> &nbsp;·&nbsp; <span class="down">▼ -10.1% vs LY</span></div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Usuarios</div>
+      <div class="kpi-value">3,473</div>
+      <div class="kpi-delta"><span class="up">▲ +10.8% vs LM</span> &nbsp;·&nbsp; <span class="up">▲ +36.0% vs LY</span></div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Frecuencia</div>
+      <div class="kpi-value">1.14</div>
+      <div class="kpi-delta"><span class="up">▲ +1.1% vs LM</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">YTD Venta</div>
+      <div class="kpi-value sm">$4.73M</div>
+      <div class="kpi-delta"><span class="down">▼ -11% vs LY</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">YTD Órdenes</div>
+      <div class="kpi-value sm">15,193</div>
+      <div class="kpi-delta"><span class="down">▼ -4.6% vs LY</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">YTD AOV</div>
+      <div class="kpi-value sm">$311.15</div>
+      <div class="kpi-delta"><span class="down">▼ -6.6% vs LY</span></div>
+    </div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>📈 Tendencia Venta Neta — 13 meses</h3>
+      <div class="chart-wrap"><canvas id="ventaTrend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>📦 Tendencia Órdenes — 13 meses</h3>
+      <div class="chart-wrap"><canvas id="ordenesTrend"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>🏙️ Venta por Ciudad — Mayo vs Abril (mismas tiendas)</h3>
+      <div class="chart-wrap"><canvas id="ventaCiudad"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>📊 Variación % vs LM por Ciudad</h3>
+      <div class="chart-wrap"><canvas id="varCiudad"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h3>Resumen por Ciudad — Mayo 2026</h3>
+    <table class="data-table">
+      <thead><tr><th>Ciudad</th><th class="num">Venta</th><th class="num">Δ vs LM</th><th class="num">Órdenes</th><th class="num">Δ vs LM</th><th class="num">AOV</th><th class="num">Δ AOV</th></tr></thead>
+      <tbody>
+        <tr><td>Ciudad de México</td><td class="num">$484,026</td><td class="num"><span class="up">▲ +17.2%</span></td><td class="num">1,532</td><td class="num"><span class="up">▲ +23.9%</span></td><td class="num">$315.94</td><td class="num"><span class="down">▼ -5.5%</span></td></tr>
+        <tr><td>Playa del Carmen</td><td class="num">$212,896</td><td class="num"><span class="neutral">— -0.1%</span></td><td class="num">698</td><td class="num"><span class="up">▲ +4.8%</span></td><td class="num">$305.01</td><td class="num"><span class="down">▼ -4.7%</span></td></tr>
+        <tr><td>Mérida</td><td class="num">$187,494</td><td class="num"><span class="down">▼ -5.3%</span></td><td class="num">773</td><td class="num"><span class="down">▼ -1.5%</span></td><td class="num">$242.55</td><td class="num"><span class="down">▼ -3.8%</span></td></tr>
+        <tr><td>Cancún</td><td class="num">$142,889</td><td class="num"><span class="up">▲ +8.6%</span></td><td class="num">503</td><td class="num"><span class="up">▲ +10.6%</span></td><td class="num">$284.07</td><td class="num"><span class="down">▼ -1.8%</span></td></tr>
+        <tr><td>Acapulco</td><td class="num">$100,066</td><td class="num"><span class="down">▼ -23.3%</span></td><td class="num">332</td><td class="num"><span class="down">▼ -14.4%</span></td><td class="num">$301.40</td><td class="num"><span class="down">▼ -10.3%</span></td></tr>
+        <tr style="font-weight:700;"><td>Total (mismas tiendas)</td><td class="num">$1,127,371</td><td class="num"><span class="up">▲ +3.8%</span></td><td class="num">3,838</td><td class="num"><span class="up">▲ +8.7%</span></td><td class="num">$293.74</td><td class="num"><span class="down">▼ -4.5%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 2. TIENDAS -->
+<section id="tiendas">
+  <div class="section-header">
+    <h1>Desempeño por Tienda — Mayo 2026</h1>
+    <p>18 sucursales · Brand 13280 · Ordenadas por Venta</p>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>🥧 Market Share por Venta — Top 10</h3>
+      <div class="chart-wrap tall"><canvas id="storeShare"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>📦 Top 12 Tiendas por Órdenes</h3>
+      <div class="chart-wrap tall"><canvas id="storeOrdenes"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h3>Desglose Completo por Tienda — Brand 13280</h3>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Tienda</th><th>Ciudad</th><th class="num">Órdenes</th><th class="num">Δ LM</th><th class="num">Venta</th><th class="num">% Total</th><th class="num">AOV aprox</th><th>Tendencia</th></tr></thead>
+      <tbody id="storeTbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 3. FUNNEL -->
+<section id="funnel">
+  <div class="section-header">
+    <h1>Funnel de Conversión — Mayo 2026</h1>
+    <p>Brand 13280 · Fuente: Looker Studio</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card blue"><div class="kpi-label">Total Clicks</div><div class="kpi-value">32,287</div><div class="kpi-delta neutral">Brand 13280 (regular)</div></div>
+    <div class="kpi-card"><div class="kpi-label">ATC Rate</div><div class="kpi-value">22.14%</div><div class="kpi-delta neutral">→ 7,158 usuarios</div></div>
+    <div class="kpi-card"><div class="kpi-label">CVR Total</div><div class="kpi-value">11.93%</div><div class="kpi-delta neutral">Brand 13280</div></div>
+    <div class="kpi-card green"><div class="kpi-label">CVR Top Store</div><div class="kpi-value sm">Multiplaza</div><div class="kpi-delta up">18.87%</div></div>
+    <div class="kpi-card red"><div class="kpi-label">CVR Min Store</div><div class="kpi-value sm">P.Alvarado</div><div class="kpi-delta down">6.95%</div></div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>🔽 Funnel General LCDLA (Brand 13280) — Mayo</h3>
+      <div class="funnel-visual" id="funnelViz"></div>
+    </div>
+    <div class="chart-card">
+      <h3>📊 CVR por Tienda — Mayo 2026</h3>
+      <div class="chart-wrap tall"><canvas id="cvrStore"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. OPERACIONES -->
+<section id="ops">
+  <div class="section-header">
+    <h1>Operaciones — Mayo 2026</h1>
+    <p>Métricas globales · Fuente: Business Review + Defect Daily Report</p>
+  </div>
+
+  <div class="ops-grid">
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">% Availability</span><span class="ops-target">Target: 98.0%</span></div>
+      <div class="ops-value warn">95.8%</div>
+      <div class="ops-delta down">▼ -1.5pp vs Abr (97.2%) — por debajo del target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:95.8%;background:var(--yellow)"></div></div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">% Cancelaciones</span><span class="ops-target">Máx: 0.7%</span></div>
+      <div class="ops-value ok">0.32%</div>
+      <div class="ops-delta up">▼ -0.04pp vs Abr (0.35%) ✓ En target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:46%;background:var(--green)"></div></div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">Cooking Time</span><span class="ops-target">Aliado: 15 min</span></div>
+      <div class="ops-value ok">13.54 min</div>
+      <div class="ops-delta up">▼ -1.28 min vs Abr (14.82) ✓ En target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:90%;background:var(--green)"></div></div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">Defect Rate (BR)</span><span class="ops-target">Máx: 1.2%</span></div>
+      <div class="ops-value danger">3.34%</div>
+      <div class="ops-delta down">▲ +0.11pp vs Abr (3.24%) — 2.8x el target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:100%;background:var(--red)"></div></div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">Wait Time RT</span><span class="ops-target">Máx: 3 min</span></div>
+      <div class="ops-value danger">5.64 min</div>
+      <div class="ops-delta down">▲ +0.4 min vs Abr (5.29) — 1.9x el target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:100%;background:var(--red)"></div></div>
+    </div>
+    <div class="ops-card">
+      <div class="ops-header"><span class="ops-metric">Total Entrega</span><span class="ops-target">Target: 30 min</span></div>
+      <div class="ops-value danger">48.27 min</div>
+      <div class="ops-delta down">▲ +2.37 min vs Abr (45.90) — 1.6x el target</div>
+      <div class="ops-bar-wrap"><div class="ops-bar" style="width:100%;background:var(--red)"></div></div>
+    </div>
+  </div>
+
+  <!-- DETALLE DEFECTOS -->
+  <div class="sub-header">🔍 Detalle de Defectos — Mayo 2026</div>
+
+  <div class="defect-type-grid">
+    <div class="defect-card">
+      <div class="defect-kpi missing-bg">
+        <div class="val">2.51%</div>
+        <div class="lbl">Missing Rate</div>
+        <div class="sub">100 defectos · artículos faltantes</div>
+      </div>
+    </div>
+    <div class="defect-card">
+      <div class="defect-kpi bad-bg">
+        <div class="val">2.06%</div>
+        <div class="lbl">Bad Rate</div>
+        <div class="sub">82 defectos · producto en mal estado</div>
+      </div>
+    </div>
+    <div class="defect-card">
+      <div class="defect-kpi wrong-bg">
+        <div class="val">0.58%</div>
+        <div class="lbl">Wrong Rate</div>
+        <div class="sub">23 defectos · producto incorrecto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="defect-grid">
+    <div class="defect-card">
+      <h3>📈 Tendencia DR por Tipo — Ene a May 2026</h3>
+      <div class="chart-wrap"><canvas id="drTrend"></canvas></div>
+    </div>
+    <div class="defect-card">
+      <h3>📊 Conteo de Defectos por Mes</h3>
+      <div class="chart-wrap"><canvas id="drCount"></canvas></div>
+    </div>
+  </div>
+
+  <div class="defect-grid">
+    <div class="defect-card">
+      <h3>📉 Bad Orders Ally — Tendencia Feb–May 2026</h3>
+      <div class="chart-wrap"><canvas id="badOrdersTrend"></canvas></div>
+    </div>
+    <div class="defect-card">
+      <h3>💬 Comentarios de Defectos — Mayo 2026</h3>
+      <table class="data-table" style="margin-top:.4rem;">
+        <thead><tr><th>Tienda</th><th>Producto</th><th>Tipo</th><th>Comentario</th></tr></thead>
+        <tbody>
+          <tr><td>Bonampak</td><td>Lasaña</td><td><span class="pill pill-red">Bad</span></td><td style="font-size:.7rem;">Tiene moho / comida rara</td></tr>
+          <tr><td>Bonampak</td><td>Sopa Azteca</td><td><span class="pill pill-red">Bad</span></td><td style="font-size:.7rem;">Producto dañado</td></tr>
+          <tr><td>Bonampak</td><td>Lasaña</td><td><span class="pill pill-yellow">Wrong</span></td><td style="font-size:.7rem;">Enviaron producto incorrecto</td></tr>
+          <tr><td>Bonampak</td><td>Caldo Tlalpeño</td><td><span class="pill pill-yellow">Missing</span></td><td style="font-size:.7rem;">No enviaron complementos</td></tr>
+          <tr><td>Bonampak</td><td>Gordita (x2)</td><td><span class="pill pill-yellow">Missing</span></td><td style="font-size:.7rem;">Faltaron 2 gorditas</td></tr>
+          <tr><td>Bonampak</td><td>Lasaña</td><td><span class="pill pill-red">Bad</span></td><td style="font-size:.7rem;">Llegó la comida batida</td></tr>
+          <tr><td>Exhibimex</td><td>Varios</td><td><span class="pill pill-yellow">Missing</span></td><td style="font-size:.7rem;">Pedido incompleto recurrente</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h3>⚠️ Defect Rate por Tienda — Mayo 2026 · Fuente: WO Service Dashboard</h3>
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Tienda</th><th>Ciudad</th><th class="num">Quejas</th><th class="num">Órd Fin</th><th class="num">% DR</th><th>Status</th></tr></thead>
+      <tbody id="drTbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 5. PRODUCTOS -->
+<section id="productos">
+  <div class="section-header">
+    <h1>Top Productos — Mayo 2026</h1>
+    <p>8,131 piezas · +1.47% vs LM · $76,301 en ventas de top 12</p>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>🏆 Top 10 Productos por Piezas — Mayo vs Abr</h3>
+      <div class="chart-wrap" style="height:340px;"><canvas id="topProd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>📈 Variación % vs LM por Producto</h3>
+      <div class="chart-wrap tall"><canvas id="varProd"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>🕐 Horarios de Consumo — Mayo 2026</h3>
+      <div class="chart-wrap"><canvas id="horariosChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>📅 Días de Consumo — Mayo 2026</h3>
+      <div class="chart-wrap"><canvas id="diasChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. USUARIOS -->
+<section id="usuarios">
+  <div class="section-header">
+    <h1>Análisis de Usuarios — Mayo 2026</h1>
+    <p>3,473 usuarios activos · Lifecycle + Prime/No Prime</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card red"><div class="kpi-label">First Order</div><div class="kpi-value">1,718</div><div class="kpi-delta neutral">49.5% del total · <span class="up">▲ +11.6% vs LM</span></div></div>
+    <div class="kpi-card yellow"><div class="kpi-label">Reactivated</div><div class="kpi-value">1,105</div><div class="kpi-delta neutral">31.8% del total · <span class="up">▲ +5.9% vs LM</span></div></div>
+    <div class="kpi-card green"><div class="kpi-label">Retained</div><div class="kpi-value">650</div><div class="kpi-delta neutral">18.7% del total · <span class="up">▲ +17.5% vs LM</span></div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Frecuencia</div><div class="kpi-value">1.14</div><div class="kpi-delta"><span class="up">▲ +1.1% vs LM</span></div></div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>📊 Evolución Usuarios por Tipo — Ene a May 2026</h3>
+      <div class="chart-wrap tall"><canvas id="usersEvol"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>🥧 Mix Lifecycle % — Ene a May 2026</h3>
+      <div class="chart-wrap tall"><canvas id="usersMix"></canvas></div>
+    </div>
+  </div>
+
+  <div class="prime-grid">
+    <div class="prime-card">
+      <h3>👑 Prime</h3>
+      <div class="kpi-grid" style="margin-bottom:0;">
+        <div class="kpi-card yellow"><div class="kpi-label">Orders</div><div class="kpi-value sm">2,467</div><div class="kpi-delta neutral">62.38% · <span class="up">+11.4% LM</span></div></div>
+        <div class="kpi-card yellow"><div class="kpi-label">Venta Portal</div><div class="kpi-value sm">$739K</div><div class="kpi-delta neutral">63.36% · <span class="up">+8.0% LM</span></div></div>
+        <div class="kpi-card yellow"><div class="kpi-label">Users</div><div class="kpi-value sm">2,013</div><div class="kpi-delta neutral">60.72% · <span class="up">+12.6% LM</span></div></div>
+        <div class="kpi-card yellow"><div class="kpi-label">GMV</div><div class="kpi-value sm">$1.10M</div><div class="kpi-delta neutral">62.31% · <span class="up">+9.4% LM</span></div></div>
+      </div>
+    </div>
+    <div class="prime-card">
+      <h3>🔓 No Prime</h3>
+      <div class="kpi-grid" style="margin-bottom:0;">
+        <div class="kpi-card"><div class="kpi-label">Orders</div><div class="kpi-value sm">1,488</div><div class="kpi-delta neutral">37.62% · <span class="neutral">+13.1% LM</span></div></div>
+        <div class="kpi-card"><div class="kpi-label">Venta Portal</div><div class="kpi-value sm">$427K</div><div class="kpi-delta neutral">36.64% · <span class="neutral">+6.4% LM</span></div></div>
+        <div class="kpi-card"><div class="kpi-label">Users</div><div class="kpi-value sm">1,342</div><div class="kpi-delta neutral">40.48% · <span class="neutral">+17.7% LM</span></div></div>
+        <div class="kpi-card"><div class="kpi-label">GMV</div><div class="kpi-value sm">$664K</div><div class="kpi-delta neutral">37.69% · <span class="neutral">+7.6% LM</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. INSIGHTS -->
+<section id="insights">
+  <div class="section-header">
+    <h1>Insights Clave — Mayo 2026</h1>
+    <p>Hallazgos estratégicos para toma de decisiones</p>
+  </div>
+  <div class="insights-grid">
+    <div class="insight-card green">
+      <div class="insight-icon">🚀</div>
+      <div class="insight-title">Mayo rebota con fuerza</div>
+      <div class="insight-body">Venta +7.4% y Órdenes +12% vs LM, revirtiendo la tendencia bajista de Q1. Mayo cierra como el mejor mes del año con $1.17M, por encima de Abril ($1.07M). El crecimiento vs LY es sólido: +18.5% en venta y +31.8% en órdenes.</div>
+    </div>
+    <div class="insight-card green">
+      <div class="insight-icon">📈</div>
+      <div class="insight-title">CDMX lidera la recuperación</div>
+      <div class="insight-body">CDMX creció +17.2% en venta y +24% en órdenes vs LM. Los motores son Exhibimex (+67% órdenes), Satélite (+43%), Zona Rosa (+51%) y Puente Alvarado (+36%). La capital está en su mejor momento del año.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">🍲</div>
+      <div class="insight-title">Caldo Tlalpeño #1, Pozole explota</div>
+      <div class="insight-body">Caldo Tlalpeño lidera con 1,233 piezas (+43.7% vs LM). Pozole creció +92.6% (759 pcs). Ambos caldos son los pilares del menú y candidatos naturales para combos de Copa del Mundo. Combo Flautas también subió +40.7%.</div>
+    </div>
+    <div class="insight-card red">
+      <div class="insight-icon">⚠️</div>
+      <div class="insight-title">Defectos en máximo del año</div>
+      <div class="insight-body">DR llega a 5.14% en mayo (Defect Daily Report), máximo en 5 meses. Missing items son la causa principal (2.51%) y Bad rate se disparó a 2.06%. Bonampak (7.21%), Puente Alvarado (5.56%) y Polanco (5.52%) son los focos críticos.</div>
+    </div>
+    <div class="insight-card red">
+      <div class="insight-icon">🕐</div>
+      <div class="insight-title">Tiempos de entrega se deterioran</div>
+      <div class="insight-body">Total de entrega: 48.27 min (+2.37 vs Abr), lejos del target de 30 min. Wait Time RT (5.64 min) también empeora. CDMX supera los 50 min en varias tiendas (Satélite 56, Insurgentes 56, Polanco 55). Urgente atender con el equipo de RT.</div>
+    </div>
+    <div class="insight-card red">
+      <div class="insight-icon">📉</div>
+      <div class="insight-title">Acapulco en caída sostenida</div>
+      <div class="insight-body">Acapulco cae -23.3% en venta y -14.4% en órdenes vs LM. Diamante (-24%) y Galerías Diana (-20%) lideran el declive. Availability de Diamante ya estaba en 82.1% en abril. Requiere plan de rescate antes de Copa del Mundo.</div>
+    </div>
+    <div class="insight-card turbo">
+      <div class="insight-icon">⚡</div>
+      <div class="insight-title">Turbo en fase de rampa</div>
+      <div class="insight-body">Turbo inicia mayo con 80 órdenes y $23,938 en 4 stores. Zona Rosa-Turbo lidera (43 órdenes, $12K). El principal bloqueador es El Dorado-Turbo con 58.3% de availability y cancelaciones CBPI al 100% en varias semanas. Requiere intervención operativa inmediata.</div>
+    </div>
+    <div class="insight-card blue">
+      <div class="insight-icon">📅</div>
+      <div class="insight-title">Dom y Sáb = 50% de las órdenes</div>
+      <div class="insight-body">Domingo concentra 820 órdenes (29%) y Sábado 584 (21%). Peak horario entre 14h-16h (hora de comida). Hay oportunidad clara para campañas específicas de fin de semana y horario de comida que capitalicen este comportamiento.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">👥</div>
+      <div class="insight-title">Base de usuarios en crecimiento sostenido</div>
+      <div class="insight-body">3,473 usuarios en mayo, +10.8% vs LM y +36% vs LY. First Orders (49.5%) muestran buena adquisición. Prime representa el 60.7% de usuarios y 62.3% del GMV, un ecosistema de lealtad saludable que hay que fortalecer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. CAMPAÑAS JUNIO -->
+<section id="q2">
+  <div class="section-header">
+    <h1>Campañas Junio 2026</h1>
+    <p>La Casa de Los Abuelos · Vigencia 01/06 – 30/06 · 4 grupos de campaña</p>
+  </div>
+
+  <!-- KPI resumen campañas -->
+  <div class="kpi-grid">
+    <div class="kpi-card red"><div class="kpi-label">Campañas activas</div><div class="kpi-value">4</div><div class="kpi-delta neutral">Coca Cola · Nuevos · Desayunos · Platazos</div></div>
+    <div class="kpi-card"><div class="kpi-label">Productos en promo</div><div class="kpi-value">11</div><div class="kpi-delta neutral">10 con descuento + 1 Churros 2x1</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Mayor descuento total</div><div class="kpi-value">40%</div><div class="kpi-delta neutral">Campaña Nuevos (20% aliado + 20% Rappi)</div></div>
+    <div class="kpi-card yellow"><div class="kpi-label">Rango descuentos</div><div class="kpi-value sm">24%–40%</div><div class="kpi-delta neutral">Según tipo de campaña</div></div>
+  </div>
+
+  <!-- CAMPAÑA 1: COCA COLA -->
+  <div class="q2-card" style="margin-bottom:1rem;">
+    <div class="q2-header" style="background:linear-gradient(135deg,#E82020,#b01010);">
+      <h3>🥤 Coca Cola · 01/06 – 30/06</h3>
+      <p>Audiencia: Full Users · Todo el día · Tipo: Co-inversión Coca Cola</p>
+    </div>
+    <div class="q2-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin-bottom:.5rem;">
+        <div style="background:#fef2f2;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#dc2626;text-transform:uppercase;margin-bottom:.4rem;">Combo Sopa</div>
+          <div class="q2-item">Descuento total: <strong>35%</strong></div>
+          <div class="q2-item">Aliado: 10% &nbsp;·&nbsp; Co-inversión Rappi: 25%</div>
+          <div class="q2-item">Audiencia: Full Users</div>
+        </div>
+        <div style="background:#fef2f2;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#dc2626;text-transform:uppercase;margin-bottom:.4rem;">Combo Quesadillas</div>
+          <div class="q2-item">Descuento total: <strong>35%</strong></div>
+          <div class="q2-item">Aliado: 10% &nbsp;·&nbsp; Co-inversión Rappi: 25%</div>
+          <div class="q2-item">Audiencia: Full Users</div>
+        </div>
+        <div style="background:#fef2f2;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#dc2626;text-transform:uppercase;margin-bottom:.4rem;">Combo Flautas</div>
+          <div class="q2-item">Descuento total: <strong>35%</strong></div>
+          <div class="q2-item">Aliado: 10% &nbsp;·&nbsp; Co-inversión Rappi: 25%</div>
+          <div class="q2-item">Audiencia: Full Users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAÑA 2: NUEVOS -->
+  <div class="q2-card" style="margin-bottom:1rem;">
+    <div class="q2-header" style="background:linear-gradient(135deg,#6B0F9C,#9B3CCE);">
+      <h3>🆕 Nuevos · 01/06 – 30/06</h3>
+      <p>Audiencia: Nuevos usuarios · Mayor descuento de todas las campañas</p>
+    </div>
+    <div class="q2-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin-bottom:.5rem;">
+        <div style="background:#f5f3ff;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#6B0F9C;text-transform:uppercase;margin-bottom:.4rem;">Caldo Tlalpeño · $173.00</div>
+          <div class="q2-item">Descuento total: <strong>40%</strong></div>
+          <div class="q2-item">Aliado: 20% &nbsp;·&nbsp; Co-inversión Rappi: 20%</div>
+          <div class="q2-item">Audiencia: Nuevos · Todo el día</div>
+        </div>
+        <div style="background:#f5f3ff;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#6B0F9C;text-transform:uppercase;margin-bottom:.4rem;">Pozole · $169.00</div>
+          <div class="q2-item">Descuento total: <strong>40%</strong></div>
+          <div class="q2-item">Aliado: 20% &nbsp;·&nbsp; Co-inversión Rappi: 20%</div>
+          <div class="q2-item">Horario: 13:00 a 16:00 hrs · Audiencia: Nuevos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAÑA 3: DESAYUNOS -->
+  <div class="q2-card" style="margin-bottom:1rem;">
+    <div class="q2-header" style="background:linear-gradient(135deg,#F5A623,#d48a0e);">
+      <h3>🌅 Desayunos · 01/06 – 30/06</h3>
+      <p>Horario: 07:00 a 13:00 hrs · Audiencia: Full Users</p>
+    </div>
+    <div class="q2-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin-bottom:.5rem;">
+        <div style="background:#fffbeb;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:.4rem;">Hot Cakes · $159.00</div>
+          <div class="q2-item">Descuento total: <strong>24%</strong></div>
+          <div class="q2-item">Aliado: 15% &nbsp;·&nbsp; Co-inversión Rappi: 9%</div>
+          <div class="q2-item">Horario: 07:00 a 13:00 · Full Users</div>
+        </div>
+        <div style="background:#fffbeb;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:.4rem;">Combo Desayuno</div>
+          <div class="q2-item">Descuento total: <strong>24%</strong></div>
+          <div class="q2-item">Aliado: 15% &nbsp;·&nbsp; Co-inversión Rappi: 9%</div>
+          <div class="q2-item">Horario: 07:00 a 13:00 · Full Users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAÑA 4: PLATAZOS -->
+  <div class="q2-card" style="margin-bottom:1rem;">
+    <div class="q2-header" style="background:linear-gradient(135deg,#1E6FDB,#1550a8);">
+      <h3>🍽️ Platazos · 01/06 – 30/06</h3>
+      <p>Horario: 16:00 a 22:00 hrs · Audiencia: Full Users · Cenas y Postres</p>
+    </div>
+    <div class="q2-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;margin-bottom:.5rem;">
+        <div style="background:#eff6ff;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#1E6FDB;text-transform:uppercase;margin-bottom:.4rem;">Lasaña · $194.00</div>
+          <div class="q2-item">Descuento total: <strong>27%</strong></div>
+          <div class="q2-item">Aliado: 15% &nbsp;·&nbsp; Co-inversión Rappi: 12%</div>
+          <div class="q2-item">Horario: 19:00 a 22:00 · Tipo: Cena</div>
+        </div>
+        <div style="background:#eff6ff;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#1E6FDB;text-transform:uppercase;margin-bottom:.4rem;">Combo Cena</div>
+          <div class="q2-item">Descuento total: <strong>27%</strong></div>
+          <div class="q2-item">Aliado: 15% &nbsp;·&nbsp; Co-inversión Rappi: 12%</div>
+          <div class="q2-item">Horario: 19:00 a 22:00 · Tipo: Cena</div>
+        </div>
+        <div style="background:#eff6ff;border-radius:8px;padding:.8rem;">
+          <div style="font-size:.72rem;font-weight:700;color:#1E6FDB;text-transform:uppercase;margin-bottom:.4rem;">Arroz con leche · $79.00</div>
+          <div class="q2-item">Descuento total: <strong>27%</strong></div>
+          <div class="q2-item">Aliado: 15% &nbsp;·&nbsp; Co-inversión Rappi: 12%</div>
+          <div class="q2-item">Horario: 16:00 a 19:00 · Tipo: Postre</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAÑA 5: CHURROS 2x1 -->
+  <div class="q2-card" style="margin-bottom:1.5rem;">
+    <div class="q2-header" style="background:linear-gradient(135deg,#1AAB5F,#0d8a4c);">
+      <h3>🍩 Churros 2x1 · 01/06 – 30/06</h3>
+      <p>Audiencia: Full Users · Sin costo para el aliado</p>
+    </div>
+    <div class="q2-body">
+      <div style="background:#f0fdf4;border-radius:8px;padding:.8rem;max-width:320px;">
+        <div style="font-size:.72rem;font-weight:700;color:#065f46;text-transform:uppercase;margin-bottom:.4rem;">Churros 2x1</div>
+        <div class="q2-item">Tipo: <strong>2x1</strong> — Sin descuento porcentual</div>
+        <div class="q2-item">% Aliado: 0% &nbsp;·&nbsp; Co-inversión Rappi: a definir</div>
+        <div class="q2-item">Audiencia: Full Users · Todo el día</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA RESUMEN -->
+  <div class="table-card">
+    <h3>📋 Resumen Completo de Campañas — Junio 2026</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Campaña</th>
+          <th>Producto</th>
+          <th>Precio Full</th>
+          <th>Horario</th>
+          <th>Audiencia</th>
+          <th class="num">% Aliado</th>
+          <th class="num">Co-inv Rappi</th>
+          <th class="num">Dto Total</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="3"><strong>🥤 Coca Cola</strong></td><td>Combo Sopa</td><td>—</td><td>Todo el día</td><td>Full Users</td><td class="num">10%</td><td class="num">25%</td><td class="num"><span class="pill pill-yellow">35%</span></td><td>Coca Cola</td></tr>
+        <tr><td>Combo Quesadillas</td><td>—</td><td>Todo el día</td><td>Full Users</td><td class="num">10%</td><td class="num">25%</td><td class="num"><span class="pill pill-yellow">35%</span></td><td>Coca Cola</td></tr>
+        <tr><td>Combo Flautas</td><td>—</td><td>Todo el día</td><td>Full Users</td><td class="num">10%</td><td class="num">25%</td><td class="num"><span class="pill pill-yellow">35%</span></td><td>Coca Cola</td></tr>
+        <tr style="background:#fafafa;"><td rowspan="2"><strong>🆕 Nuevos</strong></td><td>Caldo Tlalpeño</td><td>$173.00</td><td>Todo el día</td><td>Nuevos</td><td class="num">20%</td><td class="num">20%</td><td class="num"><span class="pill pill-green">40%</span></td><td>Nuevos</td></tr>
+        <tr style="background:#fafafa;"><td>Pozole</td><td>$169.00</td><td>13:00–16:00</td><td>Nuevos</td><td class="num">20%</td><td class="num">20%</td><td class="num"><span class="pill pill-green">40%</span></td><td>Nuevos</td></tr>
+        <tr><td rowspan="2"><strong>🌅 Desayunos</strong></td><td>Hot Cakes</td><td>$159.00</td><td>07:00–13:00</td><td>Full Users</td><td class="num">15%</td><td class="num">9%</td><td class="num"><span class="pill pill-gray">24%</span></td><td>Desayuno</td></tr>
+        <tr><td>Combo Desayuno</td><td>—</td><td>07:00–13:00</td><td>Full Users</td><td class="num">15%</td><td class="num">9%</td><td class="num"><span class="pill pill-gray">24%</span></td><td>Desayuno</td></tr>
+        <tr style="background:#fafafa;"><td rowspan="3"><strong>🍽️ Platazos</strong></td><td>Lasaña</td><td>$194.00</td><td>19:00–22:00</td><td>Full Users</td><td class="num">15%</td><td class="num">12%</td><td class="num"><span class="pill pill-yellow">27%</span></td><td>Cena</td></tr>
+        <tr style="background:#fafafa;"><td>Combo Cena</td><td>—</td><td>19:00–22:00</td><td>Full Users</td><td class="num">15%</td><td class="num">12%</td><td class="num"><span class="pill pill-yellow">27%</span></td><td>Cena</td></tr>
+        <tr style="background:#fafafa;"><td>Arroz con leche</td><td>$79.00</td><td>16:00–19:00</td><td>Full Users</td><td class="num">15%</td><td class="num">12%</td><td class="num"><span class="pill pill-yellow">27%</span></td><td>Postre</td></tr>
+        <tr><td><strong>🍩 Churros</strong></td><td>Churros 2x1</td><td>—</td><td>Todo el día</td><td>Full Users</td><td class="num">0%</td><td class="num">—</td><td class="num"><span class="pill pill-blue">2x1</span></td><td>2x1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 9. TURBO -->
+<section id="turbo">
+  <div class="turbo-header">
+    <div>
+      <h2>⚡ La Casa de los Abuelos — Turbo</h2>
+      <p>Brand ID 556848 · Análisis de lanzamiento y operación · Mayo 2026</p>
+    </div>
+    <div class="turbo-badge">Fase de rampa inicial</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card turbo"><div class="kpi-label">Órdenes Turbo</div><div class="kpi-value">80</div><div class="kpi-delta neutral">4 stores con ventas en mayo</div></div>
+    <div class="kpi-card turbo"><div class="kpi-label">Venta Turbo</div><div class="kpi-value sm">$23,938</div><div class="kpi-delta neutral">2.05% de la venta total LCDLA</div></div>
+    <div class="kpi-card turbo"><div class="kpi-label">AOV Turbo</div><div class="kpi-value">$299</div><div class="kpi-delta neutral">vs $295 brand regular</div></div>
+    <div class="kpi-card turbo"><div class="kpi-label">CVR Turbo</div><div class="kpi-value">9.11%</div><div class="kpi-delta down">▼ vs 11.93% regular (↓2.8pp)</div></div>
+    <div class="kpi-card turbo"><div class="kpi-label">Clicks Turbo</div><div class="kpi-value">1,625</div><div class="kpi-delta neutral">5.0% del tráfico total LCDLA</div></div>
+    <div class="kpi-card turbo"><div class="kpi-label">Stores Presentes</div><div class="kpi-value">6</div><div class="kpi-delta neutral">4 activas · 2 sin ventas en mayo</div></div>
+  </div>
+
+  <div class="table-card">
+    <h3>📍 Desglose por Tienda Turbo — Mayo 2026</h3>
+    <table class="data-table">
+      <thead><tr><th>Tienda</th><th>Ciudad</th><th class="num">Órdenes</th><th class="num">Venta</th><th class="num">AOV</th><th class="num">Availability</th><th class="num">Wait RT</th><th class="num">CT</th><th>Delivery</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Zona Rosa - Turbo</strong></td><td>CDMX</td><td class="num">43</td><td class="num">$12,438</td><td class="num">$289</td>
+          <td class="num"><span class="pill pill-green">98.2%</span></td>
+          <td class="num"><span class="pill pill-red">12.64 min</span></td><td class="num">5.79 min</td><td class="num">32 min ✓</td>
+          <td><span class="pill pill-green">Activa ⭐</span></td>
+        </tr>
+        <tr>
+          <td><strong>Bonampak - Turbo</strong></td><td>Cancún</td><td class="num">24</td><td class="num">$7,860</td><td class="num">$327</td>
+          <td class="num"><span class="pill pill-yellow">94.1%</span></td>
+          <td class="num"><span class="pill pill-green">5.49 min</span></td><td class="num">—</td><td class="num">32 min ✓</td>
+          <td><span class="pill pill-green">Activa</span></td>
+        </tr>
+        <tr>
+          <td><strong>Satélite - Turbo</strong></td><td>CDMX</td><td class="num">11</td><td class="num">$3,314</td><td class="num">$301</td>
+          <td class="num"><span class="pill pill-yellow">92.6%</span></td>
+          <td class="num"><span class="pill pill-red">13.38 min</span></td><td class="num">6.45 min</td><td class="num">44 min ⚠️</td>
+          <td><span class="pill pill-yellow">Rampa</span></td>
+        </tr>
+        <tr>
+          <td><strong>El Dorado - Turbo</strong></td><td>CDMX</td><td class="num">2</td><td class="num">$326</td><td class="num">$163</td>
+          <td class="num"><span class="pill pill-red">58.3%</span></td>
+          <td class="num"><span class="pill pill-red">9.27 min</span></td><td class="num">6.00 min</td><td class="num">—</td>
+          <td><span class="pill pill-red">Crítica ⚠️</span></td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td>Gran Plaza - Turbo</td><td>Mérida</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>
+          <td class="num"><span class="pill pill-green">98.2%</span></td>
+          <td class="num"><span class="pill pill-red">10.95 min</span></td><td class="num">—</td><td class="num">—</td>
+          <td><span class="pill pill-gray">Sin ventas</span></td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td>Uptown - Turbo</td><td>Mérida</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>
+          <td class="num"><span class="pill pill-yellow">93.3%</span></td>
+          <td class="num"><span class="pill pill-red">9.61 min</span></td><td class="num">6.00 min</td><td class="num">—</td>
+          <td><span class="pill pill-gray">Sin ventas</span></td>
+        </tr>
+        <tr style="font-weight:700;background:#fff3e0;">
+          <td>TOTAL TURBO</td><td></td><td class="num">80</td><td class="num">$23,938</td><td class="num">~$299</td>
+          <td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>📊 Órdenes y Venta Turbo por Store — Mayo</h3>
+      <div class="chart-wrap"><canvas id="turboOrdenes"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>🔽 Funnel Turbo vs Regular — Mayo 2026</h3>
+      <div class="chart-wrap"><canvas id="turboFunnel"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid chart-grid-2">
+    <div class="chart-card">
+      <h3>📶 Availability % por Tienda Turbo — Mayo</h3>
+      <div class="chart-wrap"><canvas id="turboAvail"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>⏱️ Wait Time RT vs Target 5 min — Turbo Mayo</h3>
+      <div class="chart-wrap"><canvas id="turboRT"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h3>⚠️ Alertas de Cancelaciones CBPI — Turbo Feb–May 2026</h3>
+    <table class="data-table">
+      <thead><tr><th>Tienda</th><th>Semana</th><th class="num">Cancels CBPI</th><th class="num">Cancel Rate</th><th>Causa</th></tr></thead>
+      <tbody>
+        <tr><td>El Dorado - Turbo</td><td>16/Mar/26</td><td class="num">15</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>El Dorado - Turbo</td><td>30/Mar/26</td><td class="num">7</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>El Dorado - Turbo</td><td>02/Mar/26</td><td class="num">6</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>Zona Rosa - Turbo</td><td>04/May/26</td><td class="num">9</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>El Dorado - Turbo</td><td>20/Abr/26</td><td class="num">3</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>Zona Rosa - Turbo</td><td>20/Abr/26</td><td class="num">3</td><td class="num"><span class="pill pill-red">100%</span></td><td>CBPI — Pedidos sin procesar</td></tr>
+        <tr><td>Zona Rosa - Turbo</td><td>11/May/26</td><td class="num">3</td><td class="num"><span class="pill pill-yellow">25%</span></td><td>CBPI parcial — mejorando</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-card" style="margin-top:1rem;">
+    <h3>🎯 Plan de Acción Turbo — Q2 2026</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:1rem;">
+      <div style="background:#fff3e0;border-radius:8px;padding:1rem;border-left:4px solid var(--red);">
+        <strong style="color:var(--red);font-size:.85rem;">🔴 Urgente — El Dorado Turbo</strong>
+        <div class="q2-item" style="margin-top:.6rem;">Resolver CBPI: verificar configuración de tablet y recepción de órdenes</div>
+        <div class="q2-item">Availability 58.3% → subir a 95%+ en Junio antes de activar marketing</div>
+        <div class="q2-item">Evaluar si pausar temporalmente hasta estabilizar la operación</div>
+      </div>
+      <div style="background:#ecfdf5;border-radius:8px;padding:1rem;border-left:4px solid var(--green);">
+        <strong style="color:var(--green);font-size:.85rem;">🟢 Escalar — Zona Rosa Turbo</strong>
+        <div class="q2-item" style="margin-top:.6rem;">Zona Rosa lidera con 43 órdenes y $12,438 → doblar en Junio</div>
+        <div class="q2-item">Wait RT 12.64 min es el mayor bloqueador → coordinar con zona RT</div>
+        <div class="q2-item">CBPI de sem-4-mayo ya se está mejorando (25% en semana posterior)</div>
+      </div>
+      <div style="background:#eff6ff;border-radius:8px;padding:1rem;border-left:4px solid var(--blue);">
+        <strong style="color:var(--blue);font-size:.85rem;">🔵 Activar — Mérida Turbo</strong>
+        <div class="q2-item" style="margin-top:.6rem;">Gran Plaza y Uptown Turbo sin ventas: activar visibilidad en la app</div>
+        <div class="q2-item">RT Wait >9 min en ambas: revisar cobertura de repartidores en Mérida</div>
+        <div class="q2-item">Buen candidato para Día del Padre y Copa con alta base de usuarios</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function show(id, el) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+const pal = {
+  rappi:'#FF441F', purple:'#6B0F9C', purpleL:'rgba(107,15,156,.25)',
+  green:'#1AAB5F', red:'#E82020', yellow:'#F5A623',
+  blue:'#1E6FDB', turbo:'#FF6B00', muted:'#9ca3af',
+  greenA:'rgba(26,171,95,.2)', rappiA:'rgba(255,68,31,.1)',
+};
+const base = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{grid:{display:false}},y:{grid:{color:'#f3f4f6'}}}
+};
+
+// ── 1. RESULTADOS ──────────────────────────
+new Chart('ventaTrend', {type:'line', data:{
+  labels:['May25','Jun25','Jul25','Ago25','Sep25','Oct25','Nov25','Dic25','Ene26','Feb26','Mar26','Abr26','May26'],
+  datasets:[{
+    data:[984027,946265,965966,923820,1209400,1176284,1085135,1172007,993371,862325,776790,1065631,1166442],
+    borderColor:pal.rappi, backgroundColor:pal.rappiA,
+    tension:.35, fill:true, borderWidth:2.5, pointRadius:4,
+    pointBackgroundColor:(ctx)=>ctx.dataIndex===12?pal.rappi:'transparent',
+    pointBorderColor:pal.rappi
+  }]
+}, options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.raw.toLocaleString()}}}}});
+
+new Chart('ordenesTrend', {type:'bar', data:{
+  labels:['May25','Jun25','Jul25','Ago25','Sep25','Oct25','Nov25','Dic25','Ene26','Feb26','Mar26','Abr26','May26'],
+  datasets:[{
+    data:[3066,2917,3253,2948,3538,3733,3254,3557,3155,2853,2348,3544,3955],
+    backgroundColor:(ctx)=>{
+      const c=['#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#d1d5db','#9B3CCE',pal.rappi];
+      return c[ctx.dataIndex];
+    }, borderRadius:4
+  }]
+}, options:base});
+
+new Chart('ventaCiudad', {type:'bar', data:{
+  labels:['CDMX','Playa del Carmen','Mérida','Cancún','Acapulco'],
+  datasets:[
+    {label:'Venta Mayo',data:[484026,212896,187494,142889,100066],backgroundColor:[pal.rappi,pal.purple,'#F5A623','#1E6FDB',pal.green],borderRadius:5},
+    {label:'Venta Abr',data:[413166,213064,197970,131597,130383],backgroundColor:'rgba(0,0,0,.1)',borderRadius:5}
+  ]
+}, options:{...base,plugins:{...base.plugins,legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}},
+  scales:{x:{grid:{display:false}},y:{grid:{color:'#f3f4f6'},ticks:{callback:v=>v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1000).toFixed(0)+'K'}}}}});
+
+new Chart('varCiudad', {type:'bar', data:{
+  labels:['CDMX','Playa del Carmen','Mérida','Cancún','Acapulco'],
+  datasets:[{
+    data:[17.15,-0.08,-5.29,8.58,-23.25],
+    backgroundColor:[pal.green,pal.muted,pal.red,pal.green,pal.red], borderRadius:5
+  }]
+}, options:{...base,scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}}}}});
+
+// ── 2. TIENDAS ──────────────────────────
+const storeData = [
+  {n:'Multiplaza',c:'PDC',o:391,dlm:null,v:125390,pct:10.75},
+  {n:'Gran Plaza Mérida',c:'MID',o:392,dlm:-5.3,v:92033,pct:8.15},
+  {n:'Playa',c:'PDC',o:306,dlm:null,v:91830,pct:7.87},
+  {n:'Exhibimex',c:'CDMX',o:274,dlm:63.1,v:90258,pct:7.99},
+  {n:'Uptown',c:'MID',o:353,dlm:-3.6,v:85644,pct:7.58},
+  {n:'Gran Plaza Cancún',c:'CUN',o:296,dlm:14.7,v:83615,pct:7.40},
+  {n:'Zona Rosa',c:'CDMX',o:245,dlm:51.2,v:70508,pct:6.24},
+  {n:'Satélite',c:'CDMX',o:186,dlm:26.5,v:69671,pct:6.17},
+  {n:'Insurgentes',c:'CDMX',o:220,dlm:17.0,v:67743,pct:6.00},
+  {n:'Bonampak',c:'CUN',o:211,dlm:7.1,v:61985,pct:5.49},
+  {n:'Olivar',c:'CDMX',o:165,dlm:9.3,v:58169,pct:5.15},
+  {n:'Polanco',c:'CDMX',o:172,dlm:-12.7,v:54183,pct:4.80},
+  {n:'Puente Alvarado',c:'CDMX',o:132,dlm:36.1,v:39744,pct:3.52},
+  {n:'El Dorado',c:'CDMX',o:126,dlm:0,v:36466,pct:3.23},
+  {n:'Costa Azul',c:'ACA',o:92,dlm:-2.1,v:29218,pct:2.59},
+  {n:'Galerías Diana',c:'ACA',o:94,dlm:-20.3,v:28484,pct:2.52},
+  {n:'Zócalo',c:'ACA',o:96,dlm:-1.0,v:23849,pct:2.11},
+  {n:'Diamante',c:'ACA',o:60,dlm:-24.1,v:20653,pct:1.83},
+];
+const tb = document.getElementById('storeTbody');
+storeData.forEach((s,i) => {
+  const dlmHtml = s.dlm===null?'—':s.dlm>=0?`<span class="up">▲ ${s.dlm}%</span>`:`<span class="down">▼ ${s.dlm}%</span>`;
+  const st = s.dlm===null?'<span class="pill pill-gray">—</span>':s.dlm>=30?'<span class="pill pill-green">🔥 Alto</span>':s.dlm<0?'<span class="pill pill-red">Cayó</span>':'<span class="pill pill-gray">Estable</span>';
+  tb.innerHTML+=`<tr><td>${i+1}</td><td><strong>${s.n}</strong></td><td>${s.c}</td><td class="num">${s.o.toLocaleString()}</td><td class="num">${dlmHtml}</td><td class="num">$${s.v.toLocaleString()}</td><td class="num">${s.pct}%</td><td class="num">$${Math.round(s.v/s.o)}</td><td>${st}</td></tr>`;
+});
+new Chart('storeShare',{type:'doughnut',data:{
+  labels:storeData.slice(0,10).map(s=>s.n),
+  datasets:[{data:storeData.slice(0,10).map(s=>s.v),
+    backgroundColor:['#FF441F','#6B0F9C','#1E6FDB','#9B3CCE','#F5A623','#1AAB5F','#E82020','#FF6B00','#06b6d4','#84cc16'],
+    borderWidth:2,borderColor:'#fff'}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}});
+const topByOrdenes = [
+  {n:'Gde Plaza Mérida',o:392},{n:'Multiplaza',o:391},{n:'Uptown',o:353},
+  {n:'Playa',o:306},{n:'Gde Plaza Cancún',o:296},{n:'Exhibimex',o:274},
+  {n:'Zona Rosa',o:245},{n:'Insurgentes',o:220},{n:'Bonampak',o:211},
+  {n:'Satélite',o:186},{n:'Polanco',o:172},{n:'Olivar',o:165},
+];
+new Chart('storeOrdenes',{type:'bar',data:{
+  labels:topByOrdenes.map(s=>s.n),
+  datasets:[{data:topByOrdenes.map(s=>s.o),
+    backgroundColor:topByOrdenes.map((_,i)=>i<2?pal.rappi:i<5?pal.purple:'#9B3CCE'),
+    borderRadius:4}]
+},options:{...base,indexAxis:'y',scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}});
+
+// ── 3. FUNNEL ──────────────────────────
+const fSteps=[
+  {l:'Clicks',n:32287,pct:100,c:pal.blue},
+  {l:'ATC (Add to Cart)',n:7158,pct:22.14,c:'#1d4ed8'},
+  {l:'PTC (Past to Cart)',n:5628,pct:78.56,c:pal.purple},
+  {l:'OP (Order Placed)',n:4237,pct:75.28,c:pal.rappi},
+  {l:'OPC (Confirmed)',n:3860,pct:91.10,c:'#c73200'},
+  {l:'CVR Final',n:3855,pct:11.93,c:pal.green},
+];
+const fv=document.getElementById('funnelViz');
+fSteps.forEach(s=>{
+  fv.innerHTML+=`<div class="funnel-step">
+    <div class="funnel-label">${s.l.split(' ')[0]}</div>
+    <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.max(s.pct,7)}%;background:${s.c}">
+      ${s.l==='CVR Final'?s.pct+'%':s.l==='Clicks'?s.n.toLocaleString():s.pct+'%'}
+    </div></div>
+    <div class="funnel-pct">${s.l==='Clicks'?'100%':s.l==='CVR Final'?'—':s.pct+'%'}</div>
+  </div>`;
+});
+const cvrD=[
+  {n:'Multiplaza',v:18.87},{n:'Playa',v:15.09},{n:'G.Cancún',v:14.20},
+  {n:'Bonampak',v:13.84},{n:'G.Mérida',v:13.38},{n:'Uptown',v:12.96},
+  {n:'Exhibimex',v:12.92},{n:'Polanco',v:12.52},{n:'Zona Rosa',v:11.75},
+  {n:'Costa Azul',v:11.54},{n:'Olivar',v:10.83},{n:'Diamante',v:9.74},
+  {n:'Insurgentes',v:9.44},{n:'Satélite',v:9.22},{n:'Zócalo',v:8.49},
+  {n:'G.Diana',v:8.45},{n:'El Dorado',v:7.87},{n:'P.Alvarado',v:6.95},
+];
+new Chart('cvrStore',{type:'bar',data:{
+  labels:cvrD.map(d=>d.n),
+  datasets:[{data:cvrD.map(d=>d.v),backgroundColor:cvrD.map(d=>d.v>=12?pal.green:d.v>=10?pal.yellow:pal.red),borderRadius:4}]
+},options:{...base,indexAxis:'y',scales:{x:{ticks:{callback:v=>v+'%'},grid:{display:false}},y:{grid:{display:false}}}}});
+
+// ── 4. OPS — Defectos ──────────────────────────
+new Chart('drTrend',{type:'line',data:{
+  labels:['Ene 26','Feb 26','Mar 26','Abr 26','May 26'],
+  datasets:[
+    {label:'DR Total',data:[3.74,4.20,3.12,4.16,5.14],borderColor:pal.red,tension:.3,borderWidth:2.5,pointRadius:4},
+    {label:'Missing',data:[1.46,2.00,1.39,1.94,2.51],borderColor:pal.yellow,tension:.3,borderWidth:2,borderDash:[4,3]},
+    {label:'Wrong',data:[1.18,1.03,0.59,0.84,0.58],borderColor:pal.blue,tension:.3,borderWidth:2,borderDash:[4,3]},
+    {label:'Bad',data:[1.09,1.17,1.14,1.38,2.06],borderColor:'#f97316',tension:.3,borderWidth:2,borderDash:[4,3]},
+  ]
+},options:{...base,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:12}}},
+  scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}}}}});
+
+new Chart('drCount',{type:'bar',data:{
+  labels:['Ene 26','Feb 26','Mar 26','Abr 26','May 26'],
+  datasets:[
+    {label:'Missing',data:[47,58,33,69,100],backgroundColor:pal.yellow,borderRadius:4},
+    {label:'Wrong',data:[38,30,14,30,23],backgroundColor:pal.blue,borderRadius:4},
+    {label:'Bad',data:[35,34,27,49,82],backgroundColor:pal.red,borderRadius:4},
+  ]
+},options:{...base,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:12}}},
+  scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#f3f4f6'}}}}});
+
+new Chart('badOrdersTrend',{type:'bar',data:{
+  labels:['Feb 26','Mar 26','Abr 26','May 26'],
+  datasets:[
+    {label:'Cancel Rate',data:[1.16,0.98,1.02,1.08],backgroundColor:'#bfdbfe',borderRadius:4},
+    {label:'Defect Rate',data:[3.83,2.95,4.02,4.84],backgroundColor:pal.yellow,borderRadius:4},
+    {label:'Delay Rate Ally',data:[8.04,8.11,9.69,10.29],backgroundColor:pal.red,borderRadius:4},
+  ]
+},options:{...base,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:12}}},
+  scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}}}}});
+
+const drData=[
+  {n:'Bonampak (CUN)',q:15,o:208,dr:7.21},
+  {n:'Puente Alvarado',q:7,o:126,dr:5.56},
+  {n:'Polanco',q:9,o:163,dr:5.52},
+  {n:'Exhibimex',q:14,o:272,dr:5.15},
+  {n:'Uptown (MID)',q:15,o:349,dr:4.30},
+  {n:'Gran Plaza Mérida',q:14,o:371,dr:3.77},
+  {n:'Playa (PDC)',q:11,o:306,dr:3.59},
+  {n:'Multiplaza (PDC)',q:14,o:391,dr:3.58},
+  {n:'Zona Rosa',q:7,o:242,dr:2.89},
+  {n:'Satélite',q:5,o:183,dr:2.73},
+  {n:'Insurgentes',q:5,o:210,dr:2.38},
+  {n:'Olivar',q:3,o:163,dr:1.84},
+  {n:'TOTAL',q:129,o:3577,dr:3.61},
+];
+const dtb=document.getElementById('drTbody');
+drData.forEach((d,i)=>{
+  const pill=d.dr>=5?'pill-red':d.dr>=3?'pill-yellow':'pill-green';
+  const txt=d.dr>=5?'🔴 Crítico':d.dr>=3?'🟡 Alto':'🟢 OK';
+  dtb.innerHTML+=`<tr style="${i===drData.length-1?'font-weight:700;background:#f9fafb;':''}">
+    <td>${i===drData.length-1?'':i+1}</td><td>${d.n}</td><td>${i===drData.length-1?'—':''}</td>
+    <td class="num">${d.q}</td><td class="num">${d.o.toLocaleString()}</td>
+    <td class="num">${d.dr}%</td><td><span class="pill ${pill}">${txt}</span></td>
+  </tr>`;
+});
+
+// ── 5. PRODUCTOS ──────────────────────────
+const prods=[
+  {n:'Caldo Tlalpeño',v:1233,lm:858,d:43.71},
+  {n:'Pozole',v:759,lm:394,d:92.64},
+  {n:'Consomé de Pollo',v:600,lm:587,d:2.21},
+  {n:'Quesadilla al Gusto',v:486,lm:543,d:-10.50},
+  {n:'Lasaña',v:449,lm:693,d:-35.21},
+  {n:'Sopa Azteca',v:328,lm:526,d:-37.64},
+  {n:'Sopa de Fideos',v:280,lm:261,d:7.28},
+  {n:'Flautas Tradicionales',v:271,lm:283,d:-4.24},
+  {n:'2 Churros',v:255,lm:243,d:4.94},
+  {n:'Combo Flautas',v:204,lm:145,d:40.69},
+];
+const valLabelPlugin = {
+  id:'valLabels',
+  afterDatasetsDraw(chart){
+    const ctx = chart.ctx;
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta = chart.getDatasetMeta(di);
+      if(meta.hidden) return;
+      meta.data.forEach((bar,i)=>{
+        const val = ds.data[i];
+        if(!val) return;
+        ctx.save();
+        ctx.font = 'bold 10px Segoe UI, sans-serif';
+        ctx.fillStyle = '#374151';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(val.toLocaleString()+' pzs', bar.x + 5, bar.y);
+        ctx.restore();
+      });
+    });
+  }
+};
+new Chart('topProd',{type:'bar',data:{
+  labels:prods.map(p=>p.n),
+  datasets:[
+    {label:'Mayo 2026',data:prods.map(p=>p.v),backgroundColor:pal.rappi,borderRadius:[0,4,4,0],borderSkipped:'left',barPercentage:.45},
+    {label:'Abr (LM)',data:prods.map(p=>p.lm),backgroundColor:'#9B3CCE',borderRadius:[0,4,4,0],borderSkipped:'left',barPercentage:.45}
+  ]
+},plugins:[valLabelPlugin],
+options:{
+  responsive:true, maintainAspectRatio:false,
+  indexAxis:'y',
+  layout:{padding:{right:70}},
+  plugins:{
+    legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10,usePointStyle:true}},
+    tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw.toLocaleString()} pzs`}}
+  },
+  scales:{
+    x:{grid:{display:false}, ticks:{display:false}, border:{display:false}},
+    y:{grid:{display:false}, ticks:{font:{size:11},color:'#374151'}}
+  }
+}});
+new Chart('varProd',{type:'bar',data:{
+  labels:prods.map(p=>p.n.length>16?p.n.substring(0,16)+'…':p.n),
+  datasets:[{data:prods.map(p=>p.d),backgroundColor:prods.map(p=>p.d>=0?pal.green:pal.red),borderRadius:4}]
+},options:{...base,indexAxis:'y',scales:{x:{ticks:{callback:v=>v+'%'},grid:{display:false}},y:{grid:{display:false}}}}});
+const horas=[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+const ordsHora=[37,155,214,216,290,373,444,425,361,280,245,251,249,245,150];
+new Chart('horariosChart',{type:'line',data:{
+  labels:horas.map(h=>h+'h'),
+  datasets:[{data:ordsHora,borderColor:pal.purple,backgroundColor:'rgba(107,15,156,.1)',fill:true,tension:.4,borderWidth:2.5,pointRadius:3}]
+},options:base});
+new Chart('diasChart',{type:'bar',data:{
+  labels:['Dom','Sáb','Vie','Lun','Mar','Jue','Mié'],
+  datasets:[{data:[820,584,516,577,547,458,453],
+    backgroundColor:[pal.rappi,pal.rappi,pal.purple,pal.purple,pal.purple,pal.muted,pal.muted],borderRadius:5}]
+},options:base});
+
+// ── 6. USUARIOS ──────────────────────────
+new Chart('usersEvol',{type:'bar',data:{
+  labels:['Ene','Feb','Mar','Abr','May'],
+  datasets:[
+    {label:'First Order',data:[1366,1212,857,1539,1718],backgroundColor:pal.rappi,borderRadius:4},
+    {label:'Reactivated',data:[985,883,811,1043,1105],backgroundColor:pal.yellow,borderRadius:4},
+    {label:'Retained',data:[519,473,400,553,650],backgroundColor:pal.green,borderRadius:4},
+  ]
+},options:{...base,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#f3f4f6'}}},
+  plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}}}});
+new Chart('usersMix',{type:'bar',data:{
+  labels:['Ene','Feb','Mar','Abr','May'],
+  datasets:[
+    {label:'First Order %',data:[47.6,47.2,41.4,49.1,49.5],backgroundColor:pal.rappi,borderRadius:4},
+    {label:'Reactivated %',data:[34.3,34.4,39.2,33.3,31.8],backgroundColor:pal.yellow,borderRadius:4},
+    {label:'Retained %',data:[18.1,18.4,19.3,17.6,18.7],backgroundColor:pal.green,borderRadius:4},
+  ]
+},options:{...base,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}}},
+  plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}}}});
+
+// ── 9. TURBO ──────────────────────────
+new Chart('turboOrdenes',{type:'bar',data:{
+  labels:['Zona Rosa','Bonampak','Satélite','El Dorado'],
+  datasets:[{label:'Órdenes',data:[43,24,11,2],backgroundColor:[pal.turbo,'#f97316','#fdba74','#fde68a'],borderRadius:5}]
+},options:base});
+new Chart('turboFunnel',{type:'bar',data:{
+  labels:['Clicks','ATC%','PTC%','OP%','OPC%','CVR%'],
+  datasets:[
+    {label:'Regular',data:[100,22.14,78.56,75.28,91.10,11.93],backgroundColor:pal.purple,borderRadius:4},
+    {label:'Turbo',data:[100,16.37,81.95,76.61,88.62,9.11],backgroundColor:pal.turbo,borderRadius:4},
+  ]
+},options:{...base,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}},
+  scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'}}}}});
+new Chart('turboAvail',{type:'bar',data:{
+  labels:['Gran Plaza-T','Zona Rosa-T','Bonampak-T','Uptown-T','Satélite-T','El Dorado-T'],
+  datasets:[{data:[98.2,98.2,94.1,93.3,92.6,58.3],
+    backgroundColor:[pal.green,pal.green,pal.yellow,pal.yellow,pal.yellow,pal.red],borderRadius:4}]
+},options:{...base,indexAxis:'y',scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{display:false}},y:{grid:{display:false}}}}});
+new Chart('turboRT',{type:'bar',data:{
+  labels:['Bonampak-T','El Dorado-T','Uptown-T','Gde Plaza-T','Zona Rosa-T','Satélite-T'],
+  datasets:[
+    {label:'Wait RT (min)',data:[5.49,9.27,9.61,10.95,12.64,13.38],
+      backgroundColor:[pal.green,pal.yellow,pal.yellow,pal.red,pal.red,pal.red],borderRadius:4},
+    {label:'Target 5 min',type:'line',data:[5,5,5,5,5,5],
+      borderColor:pal.purple,borderDash:[6,3],pointRadius:0,borderWidth:2,fill:false}
+  ]
+},options:{...base,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}},
+  scales:{x:{grid:{display:false}},y:{grid:{color:'#f3f4f6'}}}}});
+
+// Hash routing
+window.addEventListener('hashchange',()=>{
+  const id=location.hash.slice(1);
+  const el=document.querySelector(`nav a[href="#${id}"]`);
+  if(id&&document.getElementById(id)) show(id,el);
+});
+if(location.hash){const id=location.hash.slice(1);const el=document.querySelector(`nav a[href="#${id}"]`);if(document.getElementById(id))show(id,el);}
+</script>
+</body>
+</html>
